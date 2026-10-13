@@ -1,0 +1,57 @@
+# Auto-deploys to Vercel: production on push to main, preview on pull requests.
+# Needs repo secret VERCEL_TOKEN and repo variables VERCEL_ORG_ID / VERCEL_PROJECT_ID.
+name: Deploy to Vercel
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: vercel-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  VERCEL_ORG_ID: ${{ vars.VERCEL_ORG_ID }}
+  VERCEL_PROJECT_ID: ${{ vars.VERCEL_PROJECT_ID }}
+  VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+  TARGET: ${{ github.event_name == 'push' && 'production' || 'preview' }}
+  PROD_FLAG: ${{ github.event_name == 'push' && '--prod' || '' }}
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check for Vercel token
+        id: token
+        run: |
+          if [ -z "$VERCEL_TOKEN" ]; then
+            echo "::notice::VERCEL_TOKEN secret is not set; skipping deploy."
+            echo "ok=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "ok=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - uses: actions/checkout@v4
+        if: steps.token.outputs.ok == 'true'
+
+      - uses: actions/setup-node@v4
+        if: steps.token.outputs.ok == 'true'
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install and test
+        if: steps.token.outputs.ok == 'true'
+        run: |
+          npm ci
+          npm test
+
+      - name: Build and deploy
+        if: steps.token.outputs.ok == 'true'
+        run: |
+          npx --yes vercel@59.26.0 pull --yes --environment="$TARGET" --token="$VERCEL_TOKEN"
+          npx --yes vercel@59.26.0 build $PROD_FLAG --token="$VERCEL_TOKEN"
+          url=$(npx --yes vercel@59.26.0 deploy --prebuilt $PROD_FLAG --token="$VERCEL_TOKEN")
+          echo "Deployed: $url"
+          echo "### Deployed to $TARGET: $url" >> "$GITHUB_STEP_SUMMARY"

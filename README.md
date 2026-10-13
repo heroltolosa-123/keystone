@@ -19,8 +19,18 @@ Every fact there comes from `Keystone - Company Profile.pdf` or `Presentation.do
 
 ## Deploy
 
-Static-friendly; any Node host or Vercel works. `npm run build` must pass first.
-Set a production domain, then add `metadataBase` in `app/layout.tsx` and a sitemap/robots.
+Every push to `main` deploys to production on Vercel, and every pull request gets a preview, via
+`.github/workflows/deploy.yml` (GitHub Actions running the Vercel CLI). Live: https://keystone-brown-delta.vercel.app
+
+One-time setup: repo variables `VERCEL_ORG_ID` and `VERCEL_PROJECT_ID` (already set), plus a `VERCEL_TOKEN`
+repo secret created at https://vercel.com/account/tokens:
+
+```bash
+gh secret set VERCEL_TOKEN --repo heroltolosa-123/keystone
+```
+
+Without the secret the workflow skips the deploy instead of failing. Manual deploy: `vercel deploy --prod`.
+Once a production domain exists, add `metadataBase` in `app/layout.tsx` and a sitemap/robots.
 
 ## How the quote form works
 
