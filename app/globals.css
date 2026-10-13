@@ -1,0 +1,193 @@
+@import "tailwindcss";
+
+@theme {
+  --color-ink: #040917;
+  --color-night: #07122c;
+  --color-deep: #0b1a3d;
+  --color-steel: #16294f;
+  --color-cyan: #45e1ff;
+  --color-cyan-dim: #1d8db5;
+  --color-volt: #e8f23a;
+  --color-volt-deep: #c9d41f;
+  --color-leaf: #3fae4f;
+  --color-violet: #8d7dff;
+  --color-text: #e9eef8;
+  --color-muted: #9cabc8;
+  --color-paper: #edf1f7;
+  --color-paper-2: #dfe6f0;
+  --color-navy-text: #0a1630;
+  --color-slate: #44536f;
+
+  --font-sans: var(--font-archivo), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-jetbrains), ui-monospace, monospace;
+
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+:root {
+  color-scheme: dark;
+  --line: rgb(130 180 255 / 0.14);
+  --line-strong: rgb(130 200 255 / 0.28);
+}
+
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: 5rem;
+  background: var(--color-ink);
+}
+
+body {
+  background: var(--color-ink);
+  color: var(--color-text);
+  font-family: var(--font-sans);
+  font-feature-settings: "ss01";
+  -webkit-font-smoothing: antialiased;
+  overflow-x: clip;
+}
+
+::selection {
+  background: var(--color-volt);
+  color: var(--color-ink);
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-volt);
+  outline-offset: 3px;
+  border-radius: 2px;
+}
+
+html {
+  scrollbar-color: var(--color-steel) var(--color-ink);
+}
+
+input,
+textarea,
+select {
+  caret-color: var(--color-cyan);
+}
+
+/* Display voice: Archivo at full expanded width. */
+.display {
+  font-stretch: 125%;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 0.92;
+  text-transform: uppercase;
+  text-wrap: balance;
+}
+
+.tnum {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Scroll reveal: content is visible unless JS has armed it. */
+html.js [data-reveal] {
+  opacity: 0;
+  transform: translateY(28px);
+  filter: blur(6px);
+  transition:
+    opacity 0.9s var(--ease-out-expo),
+    transform 0.9s var(--ease-out-expo),
+    filter 0.9s var(--ease-out-expo);
+  transition-delay: var(--d, 0ms);
+}
+html.js [data-reveal].in {
+  opacity: 1;
+  transform: none;
+  filter: none;
+}
+
+/* Hero headline: words energize in sequence. */
+@keyframes energize {
+  from {
+    opacity: 0;
+    transform: translateY(0.35em);
+    filter: blur(10px);
+    text-shadow: 0 0 40px var(--color-cyan);
+  }
+  60% {
+    text-shadow: 0 0 24px rgb(69 225 255 / 0.6);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+    filter: none;
+    text-shadow: 0 0 0 transparent;
+  }
+}
+.energize {
+  display: inline-block;
+  animation: energize 1.1s var(--ease-out-expo) both;
+  animation-delay: var(--d, 0ms);
+}
+
+/* Current flowing along a conductor. */
+@keyframes flow {
+  to {
+    stroke-dashoffset: -40;
+  }
+}
+.flow {
+  stroke-dasharray: 4 16;
+  animation: flow 1.2s linear infinite;
+}
+
+@keyframes ring {
+  from {
+    transform: scale(1);
+    opacity: 0.7;
+  }
+  to {
+    transform: scale(2.4);
+    opacity: 0;
+  }
+}
+.ring {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: ring 1.8s var(--ease-out-expo) infinite;
+}
+
+@keyframes marquee {
+  to {
+    transform: translateX(-50%);
+  }
+}
+.marquee {
+  animation: marquee 48s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  html.js [data-reveal] {
+    opacity: 1;
+    transform: none;
+    filter: none;
+    transition: none;
+  }
+  .energize,
+  .flow,
+  .ring,
+  .marquee {
+    animation: none;
+  }
+}
+
+/* Bars that charge from left to right once revealed. */
+html.js .charge {
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 1.4s var(--ease-out-expo);
+  transition-delay: var(--d, 0ms);
+}
+html.js .in .charge {
+  transform: scaleX(1);
+}
+@media (prefers-reduced-motion: reduce) {
+  html.js .charge {
+    transform: none;
+    transition: none;
+  }
+}
