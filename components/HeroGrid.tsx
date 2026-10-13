@@ -6,7 +6,7 @@ type Pt = { x: number; y: number };
 type Span = { a: Pt; c: Pt; b: Pt; k: number };
 type Chain = { spans: Span[] };
 type Pulse = { chain: number; u: number; speed: number; dir: 1 | -1 };
-type Mote = { x: number; y: number; r: number; vy: number; a: number };
+type Mote = { x: number; y: number; r: number; vy: number; c: string };
 
 const CYAN = "69,225,255";
 const TOWERS = 13;
@@ -29,20 +29,22 @@ function quad(s: Span, t: number): Pt {
 /**
  * Cinematic transmission corridor: two lattice-tower lines receding to a
  * substation glow on the horizon, with current pulses running the conductors.
- * Static geometry is painted once per resize; each frame only draws pulses.
+ * Static geometry lives on its own canvas, painted once per resize; the top
+ * canvas only redraws pulses and motes.
  */
 export default function HeroGrid() {
   const ref = useRef<HTMLCanvasElement>(null);
+  const baseRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
     const canvas = ref.current;
-    if (!canvas) return;
+    const layer = baseRef.current;
+    if (!canvas || !layer) return;
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
+    const lctx = layer.getContext("2d", { alpha: false })!;
 
     const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    const layer = document.createElement("canvas");
-    const lctx = layer.getContext("2d")!;
     const glow = document.createElement("canvas");
     glow.width = glow.height = 64;
     const g = glow.getContext("2d")!;
@@ -64,6 +66,8 @@ export default function HeroGrid() {
     let raf = 0;
     let last = 0;
     let onScreen = true;
+    let narrow = false;
+    let skip = false;
 
     function tower(c: CanvasRenderingContext2D, b: Pt, H: number, alpha: number): Pt[] {
       const W = H * 0.3;
@@ -125,15 +129,15 @@ export default function HeroGrid() {
       const rect = canvas!.getBoundingClientRect();
       w = rect.width;
       h = rect.height;
-      dpr = Math.min(window.devicePixelRatio || 1, 2);
-      for (const cv of [canvas!, layer]) {
+      dpr = Math.min(window.devicePixelRatio || 1, 1.5);
+      for (const cv of [canvas!, layer!]) {
         cv.width = Math.round(w * dpr);
         cv.height = Math.round(h * dpr);
       }
       lctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       ctx!.setTransform(dpr, 0, 0, dpr, 0, 0);
 
-      const narrow = w < 768;
+      narrow = w < 768;
       const horizon = h * (narrow ? 0.62 : 0.66);
       vp = { x: w * (narrow ? 0.62 : 0.56), y: horizon };
 
@@ -241,7 +245,7 @@ export default function HeroGrid() {
         y: mr() * h,
         r: mr() * 1.4 + 0.3,
         vy: 4 + mr() * 10,
-        a: 0.15 + mr() * 0.4,
+        c: `rgba(${CYAN},${(0.15 + mr() * 0.4).toFixed(2)})`,
       }));
     }
 
@@ -253,10 +257,14 @@ export default function HeroGrid() {
     }
 
     function frame(t: number) {
-      const dt = Math.min((t - last) / 1000, 0.05);
+      // phones: 30fps is plenty for drifting light and saves battery
+      if (narrow && !reduce && (skip = !skip)) {
+        raf = requestAnimationFrame(frame);
+        return;
+      }
+      const dt = Math.min((t - last) / 1000, 0.1);
       last = t;
       ctx!.clearRect(0, 0, w, h);
-      ctx!.drawImage(layer, 0, 0, w, h);
       ctx!.globalCompositeOperation = "lighter";
 
       for (const p of pulses) {
@@ -269,9 +277,9 @@ export default function HeroGrid() {
         }
         // trail
         let prev = point(ch, p.u).p;
-        for (let s = 1; s <= 14; s++) {
-          const q = point(ch, p.u - p.dir * s * 0.035);
-          ctx!.strokeStyle = `rgba(${CYAN},${0.55 * (1 - s / 14)})`;
+        for (let s = 1; s <= 8; s++) {
+          const q = point(ch, p.u - p.dir * s * 0.06);
+          ctx!.strokeStyle = `rgba(${CYAN},${0.55 * (1 - s / 8)})`;
           ctx!.lineWidth = 0.6 + 2.2 * q.k;
           ctx!.beginPath();
           ctx!.moveTo(prev.x, prev.y);
@@ -299,10 +307,8 @@ export default function HeroGrid() {
             m.x = Math.random() * w;
           }
         }
-        ctx!.fillStyle = `rgba(${CYAN},${m.a})`;
-        ctx!.beginPath();
-        ctx!.arc(m.x, m.y, m.r, 0, Math.PI * 2);
-        ctx!.fill();
+        ctx!.fillStyle = m.c;
+        ctx!.fillRect(m.x, m.y, m.r * 2, m.r * 2);
       }
       ctx!.globalCompositeOperation = "source-over";
 
@@ -339,5 +345,10 @@ export default function HeroGrid() {
     };
   }, []);
 
-  return <canvas ref={ref} aria-hidden="true" className="absolute inset-0 h-full w-full" />;
+  return (
+    <>
+      <canvas ref={baseRef} aria-hidden="true" className="absolute inset-0 h-full w-full" />
+      <canvas ref={ref} aria-hidden="true" className="absolute inset-0 h-full w-full" />
+    </>
+  );
 }

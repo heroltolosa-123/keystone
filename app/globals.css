@@ -84,17 +84,14 @@ select {
 html.js [data-reveal] {
   opacity: 0;
   transform: translateY(28px);
-  filter: blur(6px);
   transition:
     opacity 0.9s var(--ease-out-expo),
-    transform 0.9s var(--ease-out-expo),
-    filter 0.9s var(--ease-out-expo);
+    transform 0.9s var(--ease-out-expo);
   transition-delay: var(--d, 0ms);
 }
 html.js [data-reveal].in {
   opacity: 1;
   transform: none;
-  filter: none;
 }
 
 /* Hero headline: words energize in sequence. */
@@ -102,17 +99,10 @@ html.js [data-reveal].in {
   from {
     opacity: 0;
     transform: translateY(0.35em);
-    filter: blur(10px);
-    text-shadow: 0 0 40px var(--color-cyan);
-  }
-  60% {
-    text-shadow: 0 0 24px rgb(69 225 255 / 0.6);
   }
   to {
     opacity: 1;
     transform: none;
-    filter: none;
-    text-shadow: 0 0 0 transparent;
   }
 }
 .energize {
@@ -148,6 +138,12 @@ html.js [data-reveal].in {
   animation: ring 1.8s var(--ease-out-expo) infinite;
 }
 
+/* Looping animations stop while their container is off screen. */
+[data-offscreen] .flow,
+[data-offscreen] .ring {
+  animation-play-state: paused;
+}
+
 @keyframes marquee {
   to {
     transform: translateX(-50%);
@@ -164,7 +160,6 @@ html.js [data-reveal].in {
   html.js [data-reveal] {
     opacity: 1;
     transform: none;
-    filter: none;
     transition: none;
   }
   .energize,

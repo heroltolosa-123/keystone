@@ -48,7 +48,16 @@ export default function GridExplorer() {
   const [active, setActive] = useState("substation");
   const tabs = useRef<(HTMLButtonElement | null)[]>([]);
   const scroller = useRef<HTMLDivElement>(null);
+  const root = useRef<HTMLDivElement>(null);
   const node = gridNodes.find((n) => n.id === active)!;
+
+  useEffect(() => {
+    const el = root.current;
+    if (!el) return;
+    const io = new IntersectionObserver(([e]) => el.toggleAttribute("data-offscreen", !e.isIntersecting));
+    io.observe(el);
+    return () => io.disconnect();
+  }, []);
 
   // On narrow screens the diagram scrolls sideways; keep the selected stage in view.
   useEffect(() => {
@@ -68,7 +77,7 @@ export default function GridExplorer() {
   };
 
   return (
-    <div>
+    <div ref={root}>
       <div>
         <div
           ref={scroller}
@@ -112,19 +121,25 @@ export default function GridExplorer() {
               stroke="rgba(130,180,255,0.25)"
               strokeWidth={2}
             />
-            {reach > 0 && (
-              <motion.line
-                x1={flow[0].x}
-                y1={150}
-                y2={150}
-                initial={false}
-                animate={{ x2: reach }}
-                transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-                stroke="#45e1ff"
-                strokeWidth={2.5}
-                style={{ filter: "drop-shadow(0 0 6px rgba(69,225,255,0.8))" }}
-              />
-            )}
+            {reach > 0 &&
+              [
+                { w: 8, o: 0.18 },
+                { w: 2.5, o: 1 },
+              ].map((l) => (
+                <motion.line
+                  key={l.w}
+                  x1={flow[0].x}
+                  y1={150}
+                  y2={150}
+                  initial={false}
+                  animate={{ x2: reach }}
+                  transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+                  stroke="#45e1ff"
+                  strokeWidth={l.w}
+                  strokeLinecap="round"
+                  opacity={l.o}
+                />
+              ))}
             <line
               x1={flow[0].x}
               y1={150}
@@ -210,9 +225,9 @@ export default function GridExplorer() {
           <AnimatePresence mode="wait">
             <motion.div
               key={node.id}
-              initial={{ opacity: 0, x: 16, filter: "blur(6px)" }}
-              animate={{ opacity: 1, x: 0, filter: "blur(0px)" }}
-              exit={{ opacity: 0, x: -10, filter: "blur(4px)" }}
+              initial={{ opacity: 0, x: 16 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -10 }}
               transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
             >
               <div className="grid gap-10 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] lg:gap-20">

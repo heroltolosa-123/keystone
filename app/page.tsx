@@ -68,7 +68,7 @@ export default function Home() {
               </Magnetic>
               <a
                 href="#contact"
-                className="inline-flex items-center gap-2 rounded-full border border-white/25 px-7 py-4 font-semibold backdrop-blur-sm transition-colors hover:border-cyan hover:text-cyan"
+                className="inline-flex items-center gap-2 rounded-full border border-white/25 px-7 py-4 font-semibold transition-colors hover:border-cyan hover:text-cyan"
               >
                 Request a quote
               </a>
@@ -441,7 +441,7 @@ export default function Home() {
             <div
               data-reveal
               style={{ "--d": "160ms" } as React.CSSProperties}
-              className="rounded-3xl border border-white/10 bg-night/70 p-6 shadow-[0_40px_80px_-30px_rgba(0,0,0,0.8)] backdrop-blur-md sm:p-10"
+              className="rounded-3xl border border-white/10 bg-night p-6 shadow-[0_40px_80px_-30px_rgba(0,0,0,0.8)] sm:p-10"
             >
               <QuoteForm />
             </div>

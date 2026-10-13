@@ -71,9 +71,9 @@ export default function Header() {
 
   return (
     <header
-      className={`fixed inset-x-0 top-0 z-50 transition-[background-color,backdrop-filter,border-color] duration-500 ${
+      className={`fixed inset-x-0 top-0 z-50 transition-[background-color,border-color] duration-500 ${
         scrolled || open
-          ? "border-b border-white/10 bg-ink/75 backdrop-blur-xl backdrop-saturate-150"
+          ? "border-b border-white/10 bg-ink/85 backdrop-blur-md"
           : "border-b border-transparent"
       }`}
     >
@@ -129,11 +129,11 @@ export default function Header() {
                 <AnimatePresence>
                   {item.children && drop === item.href && (
                     <motion.ul
-                      initial={{ opacity: 0, y: -6, filter: "blur(4px)" }}
-                      animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-                      exit={{ opacity: 0, y: -4, filter: "blur(4px)" }}
+                      initial={{ opacity: 0, y: -6 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -4 }}
                       transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
-                      className="absolute left-0 top-full min-w-64 rounded-lg border border-white/10 bg-night/95 p-2 shadow-[0_24px_48px_-12px_rgba(0,0,0,0.7)] backdrop-blur-xl"
+                      className="absolute left-0 top-full min-w-64 rounded-lg border border-white/10 bg-night p-2 shadow-[0_24px_48px_-12px_rgba(0,0,0,0.7)]"
                     >
                       {item.children.map((c) => (
                         <li key={c.href}>
